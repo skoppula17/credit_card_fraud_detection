@@ -1,0 +1,15 @@
+import pandas as pd
+
+class DataLoader:
+    def __init__(self, path: str):
+        self.path = path
+
+    def load(self) -> pd.DataFrame:
+        df = pd.read_csv(self.path)
+        print(f"Loaded {df.shape[0]} rows and {df.shape[1]} columns")
+        return df
+
+    def summary(self, df: pd.DataFrame) -> None:
+        print(df.head())
+        print(df.info())
+        print(df.describe())
