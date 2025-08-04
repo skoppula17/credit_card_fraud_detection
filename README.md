@@ -39,6 +39,8 @@ Financial institutions face billions in fraud losses annually. A scalable fraud 
 | XGBoost     | 0.9893             |
 | LightGBM    | 0.9548             |
 
-**Dataset Credit**
-> "Credit Card Fraud Detection" by ULB Machine Learning Group on Kaggle  
-> https://www.kaggle.com/mlg-ulb/creditcardfraud
+**Dataset**
+> "Credit Card Fraud Detection" from Kaggle  
+> https://www.kaggle.com/mlg-ulb/creditcardfraud  
+
+> **Note:** Due to file size limits, `creditcard.csv` is not tracked in this repository. Please download it from Kaggle and place it in `data/raw/` before running the pipeline.
