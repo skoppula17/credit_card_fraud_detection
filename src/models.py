@@ -3,6 +3,7 @@ from catboost import CatBoostClassifier
 import xgboost as xgb
 import lightgbm as lgb
 from sklearn.metrics import roc_auc_score
+from lightgbm import LGBMClassifier
 
 
 def train_random_forest(X_train, y_train, X_val, y_val):
@@ -58,7 +59,6 @@ def train_xgboost(X_train, y_train, X_val, y_val):
     return model, roc_auc_score(y_val, preds)
 
 def train_lgbm(X_train, y_train, X_val, y_val):
-    from lightgbm import LGBMClassifier
     clf = LGBMClassifier(
         objective='binary',
         n_estimators=200,
@@ -66,7 +66,6 @@ def train_lgbm(X_train, y_train, X_val, y_val):
         num_leaves=31,
         random_state=42
     )
-
     clf.fit(
         X_train, y_train,
         eval_set=[(X_val, y_val)],
@@ -74,6 +73,5 @@ def train_lgbm(X_train, y_train, X_val, y_val):
         early_stopping_rounds=20,
         verbose=False
     )
-
     preds = clf.predict_proba(X_val)[:, 1]
     return clf, roc_auc_score(y_val, preds)

@@ -1,42 +1,25 @@
 import argparse
 from data_loader import DataLoader
-from eda import (
-    plot_class_balance,
-    plot_time_vs_amount,
-    plot_roc_pr_curves,
-    plot_shap_summary
-)
-from models import (
-    train_random_forest,
-    train_adaboost,
-    train_catboost,
-    train_xgboost,
-    train_lgbm
-)
+from eda import plot_class_balance, plot_time_vs_amount, plot_roc_pr_curves
+from models import (train_random_forest, train_adaboost,
+                    train_catboost, train_xgboost, train_lgbm)
 from sklearn.model_selection import train_test_split
-import os
 
-def main(data_path, models_list):
-    # Load and summarize
-    loader = DataLoader(data_path)
-    df = loader.load()
-    loader.summary(df)
 
-    # EDA
+def main(data_path, model_keys):
+    df = DataLoader(data_path).load()
+    DataLoader(data_path).summary(df)
+
+    # EDA plots
     plot_class_balance(df)
     plot_time_vs_amount(df)
 
-    # Prepare features
+    # Split
     X = df.drop('Class', axis=1)
     y = df['Class']
-    X_train, X_temp, y_train, y_temp = train_test_split(
-        X, y, test_size=0.4, random_state=42
-    )
-    X_val, X_test, y_val, y_test = train_test_split(
-        X_temp, y_temp, test_size=0.5, random_state=42
-    )
+    X_train, X_tmp, y_train, y_tmp = train_test_split(X, y, test_size=0.4, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_tmp, y_tmp, test_size=0.5, random_state=42)
 
-    # Train each requested model
     runners = {
         'rf': train_random_forest,
         'ada': train_adaboost,
@@ -44,37 +27,23 @@ def main(data_path, models_list):
         'xgb': train_xgboost,
         'lgbm': train_lgbm
     }
+    trained = {}
 
-    trained_models = {}
-    for key in models_list:
-        if key in runners:
-            model, auc = runners[key](X_train, y_train, X_val, y_val)
-            print(f"{key.upper()} Validation ROC-AUC: {auc:.4f}")
-            trained_models[key] = model
-        else:
+    for key in model_keys:
+        fn = runners.get(key)
+        if not fn:
             print(f"Unknown model: {key}")
+            continue
+        model, auc = fn(X_train, y_train, X_val, y_val)
+        print(f"{key.upper()} Validation ROC-AUC: {auc:.4f}")
+        trained[key] = model
 
-    # Advanced plots
-    plot_roc_pr_curves(trained_models, X_val, y_val)
-
-    # SHAP summary for tree models
-    for name, model in trained_models.items():
-        if name in ('rf','ada','cat','xgb','lgbm'):
-            print(f"Generating SHAP summary for {name} ...")
-            plot_shap_summary(model, X_train)
+    # Advanced curves
+    plot_roc_pr_curves(trained, X_val, y_val)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Credit Card Fraud Detection'
-    )
-    parser.add_argument(
-        '--data-path', required=True,
-        help='Path to creditcard.csv'
-    )
-    parser.add_argument(
-        '--models', default='rf,ada,cat,xgb,lgbm',
-        help='Comma-separated list: rf,ada,cat,xgb,lgbm'
-    )
-    args = parser.parse_args()
-    model_keys = args.models.split(',')
-    main(args.data_path, model_keys)
+    p = argparse.ArgumentParser(description='Credit Card Fraud Detection')
+    p.add_argument('--data-path', required=True)
+    p.add_argument('--models', default='rf,ada,cat,xgb,lgbm')
+    args = p.parse_args()
+    main(args.data_path, args.models.split(','))
