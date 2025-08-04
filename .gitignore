@@ -10,4 +10,3 @@ outputs/
 
 # Data folder (raw CSV excluded due to size)
 data/raw/creditcard.csv
-```                   # Project overview and instructions
