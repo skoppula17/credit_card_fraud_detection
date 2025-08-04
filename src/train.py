@@ -1,6 +1,11 @@
 import argparse
 from data_loader import DataLoader
-from eda import plot_class_balance, plot_time_vs_amount
+from eda import (
+    plot_class_balance,
+    plot_time_vs_amount,
+    plot_roc_pr_curves,
+    plot_shap_summary
+)
 from models import (
     train_random_forest,
     train_adaboost,
@@ -9,7 +14,7 @@ from models import (
     train_lgbm
 )
 from sklearn.model_selection import train_test_split
-
+import os
 
 def main(data_path, models_list):
     # Load and summarize
@@ -31,6 +36,7 @@ def main(data_path, models_list):
         X_temp, y_temp, test_size=0.5, random_state=42
     )
 
+    # Train each requested model
     runners = {
         'rf': train_random_forest,
         'ada': train_adaboost,
@@ -39,13 +45,23 @@ def main(data_path, models_list):
         'lgbm': train_lgbm
     }
 
-    # Train each requested model
+    trained_models = {}
     for key in models_list:
         if key in runners:
             model, auc = runners[key](X_train, y_train, X_val, y_val)
             print(f"{key.upper()} Validation ROC-AUC: {auc:.4f}")
+            trained_models[key] = model
         else:
             print(f"Unknown model: {key}")
+
+    # Advanced plots
+    plot_roc_pr_curves(trained_models, X_val, y_val)
+
+    # SHAP summary for tree models
+    for name, model in trained_models.items():
+        if name in ('rf','ada','cat','xgb','lgbm'):
+            print(f"Generating SHAP summary for {name} ...")
+            plot_shap_summary(model, X_train)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

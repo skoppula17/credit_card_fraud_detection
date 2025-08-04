@@ -13,7 +13,6 @@ def train_random_forest(X_train, y_train, X_val, y_val):
     preds = clf.predict_proba(X_val)[:, 1]
     return clf, roc_auc_score(y_val, preds)
 
-
 def train_adaboost(X_train, y_train, X_val, y_val):
     clf = AdaBoostClassifier(
         n_estimators=100, learning_rate=0.8, random_state=42
@@ -21,7 +20,6 @@ def train_adaboost(X_train, y_train, X_val, y_val):
     clf.fit(X_train, y_train)
     preds = clf.predict_proba(X_val)[:, 1]
     return clf, roc_auc_score(y_val, preds)
-
 
 def train_catboost(X_train, y_train, X_val, y_val):
     clf = CatBoostClassifier(
@@ -35,7 +33,6 @@ def train_catboost(X_train, y_train, X_val, y_val):
     clf.fit(X_train, y_train)
     preds = clf.predict_proba(X_val)[:, 1]
     return clf, roc_auc_score(y_val, preds)
-
 
 def train_xgboost(X_train, y_train, X_val, y_val):
     dtrain = xgb.DMatrix(X_train, label=y_train)
@@ -60,24 +57,23 @@ def train_xgboost(X_train, y_train, X_val, y_val):
     preds = model.predict(dval)
     return model, roc_auc_score(y_val, preds)
 
-
 def train_lgbm(X_train, y_train, X_val, y_val):
-    dtrain = lgb.Dataset(X_train, label=y_train)
-    dval = lgb.Dataset(X_val, label=y_val, reference=dtrain)
-    params = {
-        'objective': 'binary',
-        'metric': 'auc',
-        'learning_rate': 0.05,
-        'num_leaves': 31,
-        'seed': 42
-    }
-    model = lgb.train(
-        params,
-        dtrain,
-        num_boost_round=200,
-        valid_sets=[dval],
-        early_stopping_rounds=20,
-        verbose_eval=False
+    from lightgbm import LGBMClassifier
+    clf = LGBMClassifier(
+        objective='binary',
+        n_estimators=200,
+        learning_rate=0.05,
+        num_leaves=31,
+        random_state=42
     )
-    preds = model.predict(X_val)
-    return model, roc_auc_score(y_val, preds)
+
+    clf.fit(
+        X_train, y_train,
+        eval_set=[(X_val, y_val)],
+        eval_metric='auc',
+        early_stopping_rounds=20,
+        verbose=False
+    )
+
+    preds = clf.predict_proba(X_val)[:, 1]
+    return clf, roc_auc_score(y_val, preds)
