@@ -23,11 +23,18 @@ def plot_time_vs_amount(df):
 
 def plot_roc_pr_curves(models, X_val, y_val):
     from sklearn.metrics import roc_curve, auc, precision_recall_curve
+    import xgboost as _xgb
     plt.figure(figsize=(12,5))
     # ROC
     plt.subplot(1,2,1)
     for name, m in models.items():
-        probs = m.predict_proba(X_val)[:,1]
+        # get probability predictions
+        if hasattr(m, 'predict_proba'):
+            probs = m.predict_proba(X_val)[:,1]
+        else:
+            # assume XGBoost Booster
+            dval = _xgb.DMatrix(X_val)
+            probs = m.predict(dval)
         fpr, tpr, _ = roc_curve(y_val, probs)
         plt.plot(fpr, tpr, label=f"{name}(AUC={auc(fpr,tpr):.3f})")
     plt.plot([0,1],[0,1],'k--')
@@ -38,7 +45,11 @@ def plot_roc_pr_curves(models, X_val, y_val):
     # PR
     plt.subplot(1,2,2)
     for name, m in models.items():
-        probs = m.predict_proba(X_val)[:,1]
+        if hasattr(m, 'predict_proba'):
+            probs = m.predict_proba(X_val)[:,1]
+        else:
+            dval = _xgb.DMatrix(X_val)
+            probs = m.predict(dval)
         p, r, _ = precision_recall_curve(y_val, probs)
         plt.plot(r, p, label=name)
     plt.title('Precision-Recall')
