@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# Outputs
+outputs/
+
+# Data folder (raw CSV excluded due to size)
+data/raw/creditcard.csv
+```                   # Project overview and instructions
