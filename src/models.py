@@ -66,12 +66,9 @@ def train_lgbm(X_train, y_train, X_val, y_val):
         num_leaves=31,
         random_state=42
     )
+    # Fit without unsupported keywords
     clf.fit(
-        X_train, y_train,
-        eval_set=[(X_val, y_val)],
-        eval_metric='auc',
-        early_stopping_rounds=20,
-        verbose=False
+        X_train, y_train
     )
     preds = clf.predict_proba(X_val)[:, 1]
     return clf, roc_auc_score(y_val, preds)
