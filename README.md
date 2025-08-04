@@ -2,7 +2,7 @@
 
 **Credit Card Fraud Detection** is a comprehensive machine learning pipeline built in Python that tackles the critical problem of unauthorized credit card transactions. Using a real Kaggle dataset of European cardholders, this project employs rigorous data preprocessing, exploratory analysis, and multiple high‑performance models to achieve robust fraud detection.
 
-## In‑Depth Project Description
+## Project Description
 1. **Data Ingestion & Validation**: Load over 284,000 anonymized transactions, ensure data integrity, and verify no missing values.
 2. **Exploratory Data Analysis (EDA)**:
    - Class balance visualization to highlight the extreme imbalance (0.17% fraud).
